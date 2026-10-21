@@ -12,7 +12,7 @@ public final class BasicHudModule implements HudModule {
         this.type = type;
     }
 
-    @Override public String id() { return type.name().toLowerCase(); }
+    @Override public String id() { return type.name().toLowerCase(java.util.Locale.ROOT); }
 
     @Override public String displayName() {
         switch (type) {
@@ -38,7 +38,7 @@ public final class BasicHudModule implements HudModule {
                         ? String.format(java.util.Locale.ROOT, "XYZ %.1f, %.1f, %.1f", s.x, s.y, s.z)
                         : null;
             case KEYSTROKES:
-                return s.playerAvailable
+                return s.keysAvailable
                         ? "W " + key(s, 0) + "  A " + key(s, 1) + "  S " + key(s, 2) + "  D " + key(s, 3)
                         : null;
             case CPS:
