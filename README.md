@@ -1,17 +1,46 @@
-# EaglerCraft Client Modules
+# EaglerCraft Client — client module development
 
-This repository is the development workspace for a Feather-inspired client UI and a small, testable gameplay-data module layer.
+This branch contains an original, version-independent HUD module layer. It is not yet a complete playable client: the repository does not currently include the target game's editable engine, menu classes, skin renderer, or browser build configuration.
 
-## Target
+## HUD modules in this branch
 
-The intended client target is Minecraft/Eaglercraft 26.2. Do not copy compiled HTML/WebAssembly output into the source tree and do not claim that a module is integrated until the game-side adapter has been connected and tested.
+The registry includes 16 modules:
 
-## Module integration status
+- FPS
+- Coordinates (XYZ)
+- Keystrokes (WASD)
+- CPS (left/right clicks)
+- World time
+- Player name
+- Ping
+- Direction
+- Armor status
+- Potion effects
+- Server address
+- Biome
+- Movement speed
+- Held item
+- Target information
+- Memory usage
 
-- Module lifecycle and game snapshot contract: scaffold in progress.
-- FPS, coordinates, keystrokes, CPS, and world-time HUD modules: depend on a live `GameSnapshot` supplied by the client adapter.
-- Actual game hook / renderer integration: pending the editable 26.2 game source tree. A compiled `.html` / `.wasm` build alone does not expose the Java source hooks needed for this step.
+The first five use the existing snapshot fields. The additional eleven use optional fields in `GameSnapshot.Extras`; they remain invisible until a game adapter provides real values. This is intentional: no fake ping, armor, biome, potion, target, or memory values are shown.
 
-## Integration rule
+## Build and test this module layer
 
-The game adapter must populate snapshots from the running client's real state every frame/tick. Never substitute fixed demo values. If player/world data is unavailable, modules should display an unavailable state or no line.
+Requires Java 17 and Gradle:
+
+```sh
+gradle :client-modules:test
+```
+
+GitHub Actions also runs the test suite on pushes and pull requests.
+
+## Remaining integration work
+
+1. Implement `LiveGameBridge.GameAccess` using the actual target game's state and input APIs.
+2. Implement `getOptionalHudData()` for optional values supported by that game.
+3. Connect the HUD renderer to the game's real render callback.
+4. Build an original main menu that reads the actual profile name and skin/head renderer.
+5. Run the complete browser build and verify the generated HTML/WebAssembly output.
+
+**Status:** the Java module layer and tests are source-controlled; full game integration and a playable HTML build are not claimed. The uploaded Rise client archive is a compiled client and its included license restricts modification/rebranding, so its compiled files are not being copied into this project.

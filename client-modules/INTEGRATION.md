@@ -1,21 +1,26 @@
-# HUD module integration contract
+# Live client integration
 
-The Java files in this directory are a framework scaffold, not yet wired into the game renderer.
+The HUD module layer now has a concrete bridge in `LiveGameBridge.java`. It is intentionally isolated from Minecraft-specific classes so it can be compiled and tested independently, then connected to the actual target client.
 
-## Required live adapter
+## Wire it into the game
 
-In the target 26.2 source tree, implement a small adapter that builds a fresh `GameSnapshot` from actual client state each frame:
+1. Implement `LiveGameBridge.GameAccess` using the real client APIs:
+   - FPS measurement and availability
+   - Local player coordinates and player name
+   - W/A/S/D key states in that exact array order
+   - Active world time and availability
+2. Implement `LiveGameBridge.HudRenderer` by forwarding `drawString(text, x, y, color)` to the game's font renderer.
+3. Create one `LiveGameBridge` when the client initializes.
+4. Call `renderFrame(monotonicMillis)` from the real HUD render callback. Pass a monotonic clock, not wall-clock time.
+5. Call `onLeftClick(monotonicMillis)` and `onRightClick(monotonicMillis)` only from actual mouse-button press events.
+6. Expose `getModules()` to the client's settings screen so toggles call `setEnabled` on the matching module.
 
-- FPS: use the client's measured FPS/frame counter.
-- Coordinates and player name: read the current local player entity.
-- Keystrokes: sample the real movement-key bindings.
-- CPS: count real mouse click events in a rolling one-second window.
-- World time: read the active world's time value only when a world exists.
+The bridge avoids fabricated player, keyboard, FPS, and world-time values. If those values are unavailable, the related module returns no line.
 
-Then create one `HudModuleManager`, call `getVisibleLines(snapshot)` during HUD rendering, and draw each returned line using the game's font renderer. Do not use placeholder values to make a module appear functional.
+## Build and tests
 
-## Current limitations
+Run `gradle :client-modules:test` with Java 17. Unit tests cover availability, module toggles, duplicate IDs, defensive key-state copying, and the one-second CPS window. GitHub Actions also runs this task.
 
-- No client renderer hooks are included because the editable Eaglercraft 26.2 source tree has not been provided in this workspace.
-- The Feather-inspired main menu, player skin/head rendering, and player-name binding still require integration with the real menu and player-profile APIs.
-- These classes have not been compiled against the target game yet. Treat integration as pending until the correct 26.2 source tree is available and a build passes.
+## Still blocked on target source
+
+This repository does not contain the editable 26.2 game source, main-menu classes, profile/skin renderer, or the real HUD renderer. Therefore the bridge is implemented but cannot yet be wired to those target APIs or produce a playable client here. The full-client integration is pending until the appropriate source tree is added.

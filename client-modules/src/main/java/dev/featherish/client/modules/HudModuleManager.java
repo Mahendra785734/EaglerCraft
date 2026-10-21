@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Registry for the client HUD. Call getVisibleLines once per render frame. */
+/** Registry for all HUD modules. Call getVisibleLines once per render frame. */
 public final class HudModuleManager {
     private final List<HudModule> modules = new ArrayList<HudModule>();
 
@@ -14,6 +14,9 @@ public final class HudModuleManager {
         register(new BasicHudModule(BasicHudModule.Type.KEYSTROKES));
         register(new BasicHudModule(BasicHudModule.Type.CPS));
         register(new BasicHudModule(BasicHudModule.Type.WORLD_TIME));
+        for (ExtendedHudModule.Type type : ExtendedHudModule.Type.values()) {
+            register(new ExtendedHudModule(type));
+        }
     }
 
     public void register(HudModule module) {
@@ -23,6 +26,7 @@ public final class HudModuleManager {
     }
 
     public HudModule find(String id) {
+        if (id == null) return null;
         for (HudModule module : modules) {
             if (module.id().equalsIgnoreCase(id)) return module;
         }
@@ -31,6 +35,13 @@ public final class HudModuleManager {
 
     public List<HudModule> getModules() {
         return Collections.unmodifiableList(modules);
+    }
+
+    public boolean setEnabled(String id, boolean enabled) {
+        HudModule module = find(id);
+        if (module == null) return false;
+        module.setEnabled(enabled);
+        return true;
     }
 
     public List<String> getVisibleLines(GameSnapshot snapshot) {

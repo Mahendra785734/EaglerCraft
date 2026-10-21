@@ -1,0 +1,2 @@
+rootProject.name = 'eaglercraft-client'
+include 'client-modules'
