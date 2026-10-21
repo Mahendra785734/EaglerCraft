@@ -1,29 +1,28 @@
-# EaglerCraft Client — 26.2 Development Scaffold
+# EaglerCraft Client — 26.2 implementation work
 
-This repository is the workspace for an original client UI concept and a small HUD module layer.
+This repository contains the client-side module layer being developed for an original Eaglercraft client. The target game source and its renderer are not currently present in this repository, so the adapter must be connected to the actual client before this becomes a playable build.
 
-## Current work
+## Implemented in this branch
 
-- **Original menu prototype:** `prototype/index.html` — interactive standalone UI preview with Home, Play, HUD Modules, Settings, and an editable profile-name preview.
-- **HUD module scaffold:** `client-modules/src/main/java/dev/featherish/client/modules` — module registry, snapshot contract, and FPS/coordinates/keystrokes/CPS/world-time text modules.
-- **Click counter:** `ClickRateCounter.java` — rolling one-second counts when the real input adapter supplies actual mouse click events.
-- **Integration notes:** `client-modules/INTEGRATION.md`.
+- `LiveGameBridge` captures real FPS, player coordinates/name, WASD state, world time, and click-rate data through a narrow game adapter.
+- `HudModuleManager` controls FPS, coordinates, keystrokes, CPS, and world-time modules.
+- `ClickRateCounter` counts actual mouse events in a rolling one-second window.
+- Gradle configuration and unit tests compile and verify the standalone module layer.
+- A GitHub Actions workflow runs the module tests on pushes and pull requests.
 
-## Important status
+## Build and test the module layer
 
-This is **not yet a playable 26.2 client**. The menu prototype is standalone; the avatar is a placeholder; the HUD modules are not yet connected to a live game renderer. No full game build has been run.
+Requires Java 17 and Gradle installed:
 
-A public 26.2 porting workspace documents the expected architecture, but explicitly does not include decompiled Minecraft game source. A full integration requires a legitimate local 26.2 client input and the matching source-generation/patching workflow. Do not commit proprietary game JARs, decompiled game source, or game assets into this repository.
+```sh
+gradle :client-modules:test
+```
 
-## Next milestones
+## What remains for the full client
 
-1. Establish a complete, authorized 26.2 source project and run its baseline build.
-2. Port the original menu design into the actual title-screen class while preserving existing navigation.
-3. Replace the CSS avatar with the live profile skin/head renderer and profile name.
-4. Connect the game snapshot adapter to FPS, local-player coordinates, movement key bindings, real mouse events, and world time.
-5. Render enabled HUD modules with the game's font/HUD renderer.
-6. Run compile, browser build, and smoke tests before calling the client playable.
+1. Connect `LiveGameBridge.GameAccess` to the actual 26.2 client state and input callbacks.
+2. Adapt `LiveGameBridge.HudRenderer` to the game's font renderer and call `renderFrame` from the real HUD render callback.
+3. Replace the game's main menu with an original client menu and bind the player name/head to the real profile and skin-rendering APIs.
+4. Build the full browser client and verify it in a browser.
 
-## Version integrity
-
-Do not relabel an older client as 26.2 or treat a compiled HTML/WebAssembly build as editable Java source. Every feature should be marked complete only after it works against the actual game state and passes a test.
+**Status:** the module framework is now real Java code with tests; the full 26.2 game integration and playable build are not yet complete. The required editable game source is not present here, and no successful full-client build is claimed.
